@@ -36,6 +36,7 @@ namespace ReadLater5
                 .AddEntityFrameworkStores<ReadLaterDataContext>();
 
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IBookmarkService, BookmarkService>();
 
             services.AddControllersWithViews();
         }

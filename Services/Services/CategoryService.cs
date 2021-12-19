@@ -3,17 +3,16 @@ using Entity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services
 {
     public class CategoryService : ICategoryService
     {
         private ReadLaterDataContext _ReadLaterDataContext;
-        public CategoryService(ReadLaterDataContext readLaterDataContext) 
+        public CategoryService(ReadLaterDataContext readLaterDataContext)
         {
-            _ReadLaterDataContext = readLaterDataContext;            
+            _ReadLaterDataContext = readLaterDataContext;
         }
 
         public Category CreateCategory(Category category)
@@ -36,7 +35,15 @@ namespace Services
 
         public Category GetCategory(int Id)
         {
-            return _ReadLaterDataContext.Categories.Where(c => c.ID == Id).FirstOrDefault();
+            var category = _ReadLaterDataContext.Categories
+                .Include(x => x.Bookmarks)
+                .Where(c => c.ID == Id).FirstOrDefault();
+            if (category == null)
+            {
+                throw new NullReferenceException("Category is null");
+            }
+            return category;
+
         }
 
         public Category GetCategory(string Name)
@@ -46,7 +53,15 @@ namespace Services
 
         public void DeleteCategory(Category category)
         {
-            _ReadLaterDataContext.Categories.Remove(category);
+            var bookmark = _ReadLaterDataContext.Bookmark.Where(b => b.CategoryId == category.ID).FirstOrDefault();
+            if (bookmark == null)
+            {
+                _ReadLaterDataContext.Categories.Remove(category);
+            }
+            else
+            {
+                throw new Exception("The category cannot be deleted because is used in some bookmark");
+            }
             _ReadLaterDataContext.SaveChanges();
         }
     }

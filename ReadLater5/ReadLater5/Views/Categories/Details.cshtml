@@ -1,26 +1,60 @@
 ﻿@model Entity.Category
 
 @{
-    ViewBag.Title = "Details";
+	ViewBag.Title = "Details";
 }
 
 <h2>Details</h2>
 
 <div>
-    <h4>Category</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
+	<h4>Category</h4>
+	<hr />
+	<dl class="dl-horizontal">
+		<dt>
+			@Html.DisplayNameFor(model => model.Name)
+		</dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Name)
-        </dd>
+		<dd>
+			@Html.DisplayFor(model => model.Name)
+		</dd>
 
-    </dl>
+	</dl>
+	<h4>Category Bookmarks</h4>
+	<table class="table">
+		<thead>
+			<tr>
+				<td>
+					<span>Url</span>
+				</td>
+				<td>
+					<span>Short Description</span>
+				</td>
+				<td>
+					<span>Create Date</span>
+				</td>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var bookmarkItem in Model.Bookmarks)
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(item => bookmarkItem.URL)
+					</td>
+					<td>
+						@Html.DisplayFor(item => bookmarkItem.ShortDescription)
+					</td>
+					<td>
+						@Html.DisplayFor(item => bookmarkItem.CreateDate)
+					</td>
+				</tr>
+			}
+		</tbody>
+
+
+	</table>
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
-    @Html.ActionLink("Back to List", "Index")
+	@Html.ActionLink("Edit", "Edit", new { id = Model.ID }) |
+	@Html.ActionLink("Back to List", "Index")
 </p>
