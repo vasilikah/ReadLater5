@@ -1,4 +1,5 @@
 using Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -7,16 +8,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace ReadLater5
 {
     public class Startup
     {
+        private readonly string JwtTokenSecretKey = "#yt0$@nit@ryInf0rm@tion$y$tem#";
+        private readonly int JwtTokenExpirationMinutes = 60000;
+        private readonly string JwtTokenAudience = "ReadLater";
+        private readonly string JwtTokenIssuer = "ReadLater";
+        private readonly string JwtTokenCookieName = "ReadLaterAuthCookie";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -36,8 +45,37 @@ namespace ReadLater5
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ReadLaterDataContext>();
 
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtTokenSecretKey));
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(config =>
+            {
+                config.RequireHttpsMetadata = false;
+                config.SaveToken = true;
+                config.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateAudience = true,
+                    ValidIssuer = JwtTokenIssuer,
+                    IssuerSigningKey = signingKey,
+                    ValidAudience = JwtTokenAudience,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+            services.AddAuthorization(au =>
+            {
+                au.AddPolicy("ReadLaterAuthorizationPolicy", policy =>
+                {
+                    policy.RequireAuthenticatedUser();
+                });
+            });
+
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IRoleService, RoleService>();    
+            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IBookmarkService, BookmarkService>();
 
